@@ -1,0 +1,30 @@
+description: blocknet
+
+target:
+   service: sing
+#   name: msravc
+   name: msrresrchvc
+#   name: msroctovc
+
+environment:
+  image: v-yuczhao/debug:0.1
+  registry: msraimsouthcentralus.azurecr.io
+  username: msraimsouthcentralus
+
+code:
+  code_upload: True
+  local_dir: $CONFIG_DIR/../
+
+jobs:
+  - name: blocknet
+    sku: 16G1-V100
+    command:
+      - sleep 10d
+    submit_args:
+      container_args:
+        shm_size: 512g
+    sla_tier: basic  # Default: premium
+    execution_mode: basic  # Default: basic
+    priority: high  # Default: medium
+
+
