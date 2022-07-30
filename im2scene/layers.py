@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from kornia.filters import filter2D
+from kornia.filters import filter2d
 import torch
 
 
@@ -100,4 +100,4 @@ class Blur(nn.Module):
     def forward(self, x):
         f = self.f
         f = f[None, None, :] * f[None, :, None]
-        return filter2D(x, f, normalized=True)
+        return filter2d(x, f, normalized=True)
