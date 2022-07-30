@@ -1,6 +1,6 @@
 data:
-  path: data/clevr2345/images/*/*.png
-  fid_file: data/clevr2345/fid_files/clevr2345_256.npz
+  path: ./data/clevr2345/images/*/*.png
+  fid_file: ./data/clevr2345/fid_files/clevr2345_256.npz
   img_size: 256
 model:
   z_dim: 64
@@ -23,6 +23,6 @@ model:
   decoder_kwargs:
     hidden_size: 64
 training:
-  out_dir:  out/clevr2345256
+  out_dir:  out/clevr2345256_test1
 rendering:
   render_program: ['render_add_clevr10', 'render_add_clevr6', 'object_translation_circle']

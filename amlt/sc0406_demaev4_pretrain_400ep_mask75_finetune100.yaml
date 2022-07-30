@@ -1,0 +1,99 @@
+description: pretrain demaev4
+
+target:
+  service: sing
+  # name: msrresrchvc
+  name: msroctovc
+  # name: itpseasiav100cl
+  # name: itpeastusv100cl
+  # name: itpeusp100cl
+  # name: itpeastusv100cl
+  # name: itphyperdgx2cl1
+  # vc: resrchvc
+  # vc: msrhyper
+  # queue: bonus
+
+environment:
+  # image: wgting96/pytorch:1.10.0-cuda11.3-cudnn8-devel
+  image: v-yuczhao/slowfast:pytorch1.11.0
+  registry: msraimsouthcentralus.azurecr.io
+  username: msraimsouthcentralus
+  setup:
+    - sudo apt-get update
+    - sudo apt-get install -y ffmpeg libsm6 libxext6 git wget
+    - pip install timm future tensorboard
+    # - export MKL_THREADING_LAYER=GNU
+
+storage:
+  data:
+    # storage_account_name: wu2train
+    storage_account_name: scim
+    # storage_account_name: seaim
+    # storage_account_name: imdataeu
+    # storage_account_name: imdatasc
+    # storage_account_name: imdatawu
+    # container_name: video-datasets
+    container_name: selfsupdata
+  proj:
+    storage_account_name: guangtingsc
+    container_name: demae
+
+
+code:
+  code_upload: True
+  local_dir: $CONFIG_DIR/../
+
+jobs:
+
+  - name: sc0406_demaev4_pretrain_400ep_mask75_finetune100
+    sku: 16G8-V100
+    # aml_mpirun:
+    #   communicator: "OpenMpi"
+    command:
+      - sudo mkdir -p /scratch
+      - cd /scratch
+      - wget -c https://azcopyvnext.azureedge.net/release20211027/azcopy_linux_amd64_10.13.0.tar.gz
+      - tar -xzvf azcopy_linux_amd64_10.13.0.tar.gz
+      - azcopy_linux_amd64_10.13.0/azcopy copy 'https://scim.blob.core.windows.net/selfsupdata/ImageNet?sv=2020-10-02&st=2022-03-31T15%3A30%3A27Z&se=2022-05-31T15%3A30%3A00Z&sr=c&sp=rl&sig=ZNMQpiWsUXv%2BYWOXaSdO8WDc3MHnr8WgNav1i%2B8WnaE%3D' ./ --recursive
+      - cd $$AMLT_CODE_DIR
+      - export MKL_THREADING_LAYER=GNU
+      - sudo ln -Ts /mnt/proj work_dirs
+      - mkdir -p data/
+      - sudo ln -Ts /scratch/ImageNet data/ImageNet
+      - ls data/ImageNet
+      - pip install -r requirements.txt
+      - torchrun --nproc_per_node=8 main_pretrain_mocostyle.py
+        --accum_iter 8
+        --batch_size 64
+        --norm_pix_loss
+        --mask_ratio 0.75
+        --epochs 400
+        --warmup_epochs 40
+        --blr 1.5e-4
+        --weight_decay 0.05
+        --data_path data/ImageNet/
+        --contrast_style 1
+        --breakpoint work_dirs/0406_demaev4_pretrain_400ep_mask75_finetune100/checkpoint-
+        --model demaev4_vit_base_patch16
+        --output_dir work_dirs/0406_demaev4_pretrain_400ep_mask75_finetune100
+      - torchrun --nproc_per_node=8 main_finetune.py
+        --accum_iter 4
+        --batch_size 32
+        --model vit_base_patch16_woamp
+        --epochs 100
+        --blr 5e-4 --layer_decay 0.65
+        --weight_decay 0.05 --drop_path 0.1 --mixup 0.8 --cutmix 1.0 --reprob 0.25
+        --dist_eval
+        --data_path data/ImageNet/
+        --breakpoint work_dirs/0406_demaev4_pretrain_400ep_mask75_finetune100/finetune/checkpoint-
+        --finetune work_dirs/0406_demaev4_pretrain_400ep_mask75_finetune100/checkpoint-399.pth
+        --output_dir work_dirs/0406_demaev4_pretrain_400ep_mask75_finetune100/finetune
+    # aml_mpirun:
+    #   process_count_per_node: 1
+    #   communicator: "OpenMpi"
+    submit_args:
+      container_args:
+        shm_size: 512g
+    sla_tier: basic  # Default: premium
+    execution_mode: basic  # Default: basic
+    priority: high  # Default: medium

@@ -1,0 +1,75 @@
+description: train giraffe
+
+target:
+  service: sing
+  name: msrresrchvc
+  # name: msroctovc
+  # name: itpseasiav100cl
+  # name: itpeastusv100cl
+  # name: itpeusp100cl
+  # name: itpeastusv100cl
+  # name: itphyperdgx2cl1
+  # vc: resrchvc
+  # vc: msrhyper
+  # queue: bonus
+
+environment:
+  # image: wgting96/pytorch:1.10.0-cuda11.3-cudnn8-devel
+  image: v-yuczhao/slowfast:pytorch1.11.0
+  registry: msraimsouthcentralus.azurecr.io
+  username: msraimsouthcentralus
+  setup:
+    - sudo apt-get update
+    - sudo apt-get install -y ffmpeg libsm6 libxext6 git wget
+    - pip install timm future tensorboard
+    # - export MKL_THREADING_LAYER=GNU
+
+storage:
+  data:
+    storage_account_name: wu2train
+    # storage_account_name: scim
+    # storage_account_name: seaim
+    # storage_account_name: imdataeu
+    # storage_account_name: imdatasc
+    # storage_account_name: imdatawu
+    # container_name: video-datasets
+    container_name: v-yanhui
+  proj:
+    storage_account_name: guangtingsc
+    container_name: vgiraffe
+
+
+code:
+  code_upload: True
+  local_dir: $CONFIG_DIR/../
+
+jobs:
+
+  - name: giraffe
+    sku: 40G1
+    # aml_mpirun:
+    #   communicator: "OpenMpi"
+    command:
+      # - sudo mkdir -p /scratch
+      # - cd /scratch
+      # - wget -c https://azcopyvnext.azureedge.net/release20211027/azcopy_linux_amd64_10.13.0.tar.gz
+      # - tar -xzvf azcopy_linux_amd64_10.13.0.tar.gz
+      # - azcopy_linux_amd64_10.13.0/azcopy copy 'https://scim.blob.core.windows.net/selfsupdata/ImageNet?sv=2020-10-02&st=2022-03-31T15%3A30%3A27Z&se=2022-05-31T15%3A30%3A00Z&sr=c&sp=rl&sig=ZNMQpiWsUXv%2BYWOXaSdO8WDc3MHnr8WgNav1i%2B8WnaE%3D' ./ --recursive
+      # - cd $$AMLT_CODE_DIR
+      - export MKL_THREADING_LAYER=GNU
+      - sudo ln -Ts /mnt/proj out
+      - mkdir -p data/
+      - sudo ln -Ts /mnt/data/datasets/clevr2345 data/clevr2345
+      - ls data/clevr2345
+      - pip install -r requirements.txt
+      - python train.py configs/256res/clevr2345_256.yaml
+        
+    # aml_mpirun:
+    #   process_count_per_node: 1
+    #   communicator: "OpenMpi"
+    submit_args:
+      container_args:
+        shm_size: 512g
+    sla_tier: basic  # Default: premium
+    execution_mode: basic  # Default: basic
+    priority: high  # Default: medium
