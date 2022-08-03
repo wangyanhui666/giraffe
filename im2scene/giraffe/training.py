@@ -70,6 +70,7 @@ class Trainer(BaseTrainer):
             data (dict): data dictionary
             it (int): training iteration
         '''
+
         loss_g = self.train_step_generator(data, it)
         loss_d, reg_d, fake_d, real_d = self.train_step_discriminator(data, it)
 

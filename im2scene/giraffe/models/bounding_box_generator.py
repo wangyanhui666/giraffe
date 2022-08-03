@@ -145,7 +145,7 @@ class BoundingBoxGenerator(nn.Module):
         def r_val(): return self.rotation_range[0] + np.random.rand() * (
             self.rotation_range[1] - self.rotation_range[0])
         R = [torch.from_numpy(
-            Rot.from_euler('z', r_val() * 2 * np.pi).as_dcm())
+            Rot.from_euler('z', r_val() * 2 * np.pi).as_matrix())
             for i in range(batch_size * self.n_boxes)]
         R = torch.stack(R, dim=0).reshape(
             batch_size, self.n_boxes, -1).cuda().float()

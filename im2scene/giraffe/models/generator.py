@@ -432,14 +432,15 @@ class Generator(nn.Module):
 
                 if mode == 'training':
                     # As done in NeRF, add noise during training
-                    sigma_i += torch.randn_like(sigma_i)
+                    sigma_i = sigma_i + torch.randn_like(sigma_i)
 
                 # Mask out values outside
                 padd = 0.1
                 mask_box = torch.all(
                     p_i <= 1. + padd, dim=-1) & torch.all(
                         p_i >= -1. - padd, dim=-1)
-                sigma_i[mask_box == 0] = 0.
+                with torch.no_grad():
+                    sigma_i[mask_box == 0] = 0.
 
                 # Reshape
                 sigma_i = sigma_i.reshape(batch_size, n_points, n_steps)
@@ -455,11 +456,12 @@ class Generator(nn.Module):
 
                 if mode == 'training':
                     # As done in NeRF, add noise during training
-                    sigma_i += torch.randn_like(sigma_i)
+                    sigma_i = sigma_i + torch.randn_like(sigma_i)
 
             feat.append(feat_i)
             sigma.append(sigma_i)
-        sigma = F.relu(torch.stack(sigma, dim=0))
+        sigma = torch.stack(sigma,dim=0)
+        sigma = F.relu(sigma,inplace=False)
         feat = torch.stack(feat, dim=0)
 
         if self.sample_object_existance:
@@ -473,8 +475,11 @@ class Generator(nn.Module):
             sigma = sigma.reshape(sigma_shape[0] * sigma_shape[1], -1)
             object_existance = torch.from_numpy(object_existance).reshape(-1)
             # set alpha to 0 for respective objects
-            sigma[object_existance == 0] = 0.
-            sigma = sigma.reshape(*sigma_shape)
+            mask=torch.ones_like(sigma,device=sigma.device)
+            a=(object_existance==0).to(sigma.device)
+            mask[a]=0
+            sigma=sigma*mask
+            sigma = sigma.reshape(sigma_shape)
 
         # Composite
         sigma_sum, feat_weighted = self.composite_function(sigma, feat)

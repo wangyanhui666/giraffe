@@ -63,6 +63,7 @@ jobs:
       - ls data/clevr2345
       - pip install -r requirements.txt
       - python train.py configs/256res/clevr2345_256.yaml
+      - sleep infinity
         
     # aml_mpirun:
     #   process_count_per_node: 1
