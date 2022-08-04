@@ -1,4 +1,3 @@
-./out
-./gfx
-./data
-
+/out/
+/gfx/
+/data/
