@@ -46,19 +46,19 @@ class Trainer(BaseTrainer):
 
         self.vis_dict = model.generator.get_vis_dict(16)
 
-        if multi_gpu:
-            self.generator = torch.nn.DataParallel(self.model.generator)
-            self.discriminator = torch.nn.DataParallel(
-                self.model.discriminator)
-            if self.model.generator_test is not None:
-                self.generator_test = torch.nn.DataParallel(
-                    self.model.generator_test)
-            else:
-                self.generator_test = None
-        else:
-            self.generator = self.model.generator
-            self.discriminator = self.model.discriminator
-            self.generator_test = self.model.generator_test
+        # if multi_gpu:
+        #     self.generator = torch.nn.DataParallel(self.model.generator)
+        #     self.discriminator = torch.nn.DataParallel(
+        #         self.model.discriminator)
+        #     if self.model.generator_test is not None:
+        #         self.generator_test = torch.nn.DataParallel(
+        #             self.model.generator_test)
+        #     else:
+        #         self.generator_test = None
+        # else:
+        self.generator = self.model.generator
+        self.discriminator = self.model.discriminator
+        self.generator_test = self.model.generator_test
 
         if vis_dir is not None and not os.path.exists(vis_dir):
             os.makedirs(vis_dir)
