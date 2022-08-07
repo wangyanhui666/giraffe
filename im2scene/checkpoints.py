@@ -38,7 +38,6 @@ class CheckpointIO(object):
         outdict = kwargs
         for k, v in self.module_dict.items():
             outdict[k] = v.state_dict()
-        print('out_dict',outdict)
         torch.save(outdict, filename)
 
     def backup_model_best(self, filename, **kwargs):
