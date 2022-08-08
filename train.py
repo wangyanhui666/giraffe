@@ -120,6 +120,10 @@ def main(args):
     # Shorthands
     # args.output_dir = cfg['training']['args.output_dir']
     backup_every = cfg['training']['backup_every']
+    print_every = cfg['training']['print_every']
+    checkpoint_every = cfg['training']['checkpoint_every']
+    validate_every = cfg['training']['validate_every']
+    visualize_every = cfg['training']['visualize_every']
     exit_after = args.exit_after
     args.blr = cfg['training']['learning_rate']
     args.blr_d = cfg['training']['learning_rate_d']
@@ -225,7 +229,7 @@ def main(args):
         checkpoint=torch.load(args.checkpoint, map_location='cpu')
         msg=model.load_state_dict(checkpoint)
         print(msg)
-        misc.load_model(args=args, model_without_ddp=model_without_ddp, optimizer=optimizer,loss_scaler=loss_scaler)
+        # misc.load_model(args=args, model_without_ddp=model_without_ddp, optimizer=optimizer,loss_scaler=loss_scaler)
     try:
         load_dict = checkpoint_io.load('model.pt')
         print("Loaded model checkpoint.")
@@ -248,12 +252,6 @@ def main(args):
     print('Current best validation metric (%s): %.8f'
         % (model_selection_metric, metric_val_best))
 
-
-    # Shorthands
-    print_every = cfg['training']['print_every']
-    checkpoint_every = cfg['training']['checkpoint_every']
-    validate_every = cfg['training']['validate_every']
-    visualize_every = cfg['training']['visualize_every']
 
     start_time=time.time()
     t0b = time.time()

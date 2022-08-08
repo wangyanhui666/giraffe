@@ -170,8 +170,6 @@ class Trainer(BaseTrainer):
 
         # x_fake.requires_grad_()
         d_fake = discriminator(x_fake)
-        print('d_fake size',d_fake.size())
-        print('x_real size',x_real.size())
         d_loss_fake = compute_bce(d_fake, 0)
         loss_d_full += d_loss_fake
 
