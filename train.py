@@ -19,8 +19,10 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 def get_args_parser():
     parser = argparse.ArgumentParser('video giraffe training', add_help=False)
-    parser.add_argument('--batch_size', default=64, type=int,
-                        help='Batch size per GPU (effective batch size is batch_size * accum_iter * # gpus')
+    parser.add_argument('--batch_size', default=32, type=int,
+                        help='generator Batch size per GPU (effective batch size is batch_size * accum_iter * # gpus')
+    parser.add_argument('--batch_size_d',default=32,type=int,
+                        help='discriminator Batch size per GPU')
     parser.add_argument('--epochs', default=400, type=int)
     parser.add_argument('--accum_iter', default=1, type=int,
                         help='Accumulate gradient iterations (for increasing the effective batch size under memory constraints)')
@@ -44,9 +46,13 @@ def get_args_parser():
                         help='weight decay (default: 0.05)')
 
     parser.add_argument('--lr', type=float, default=None, metavar='LR',
-                        help='learning rate (absolute lr)')
-    parser.add_argument('--blr', type=float, default=1e-3, metavar='LR',
-                        help='base learning rate: absolute_lr = base_lr * total_batch_size / 256')
+                        help='learning rate of generator (absolute lr)')
+    parser.add_argument('--lr_d', type=float, default=None, metavar='LR',
+                        help='learning rate of discriminator (absolute lr)')
+    parser.add_argument('--blr', type=float, default=5e-4, metavar='LR',
+                        help='base learning rate of generator: absolute_lr = base_lr * total_batch_size / 32')
+    parser.add_argument('--blr_d', type=float, default=1e-4, metavar='LR',
+                        help='base learning rate of discriminator: absolute_lr = base_lr * total_batch_size / 32')                    
     parser.add_argument('--min_lr', type=float, default=0., metavar='LR',
                         help='lower lr bound for cyclic schedulers that hit 0')
 
@@ -115,10 +121,20 @@ def main(args):
     # args.output_dir = cfg['training']['args.output_dir']
     backup_every = cfg['training']['backup_every']
     exit_after = args.exit_after
-    lr = cfg['training']['learning_rate']
-    lr_d = cfg['training']['learning_rate_d']
+    args.blr = cfg['training']['learning_rate']
+    args.blr_d = cfg['training']['learning_rate_d']
     t0 = time.time()
 
+    eff_batch_size = args.batch_size * args.accum_iter * misc.get_world_size()
+    eff_batch_size_d = args.batch_size_d * args.accum_iter * misc.get_world_size()
+    if args.lr is None:  # only base_lr is specified
+        args.lr = args.blr * eff_batch_size / 32
+    if args.lr_d is None:  # only base_lr is specified
+        args.lr_d = args.blr_d * eff_batch_size_d / 32
+    print("base lr: %.2e" % (args.lr * 32 / eff_batch_size))
+    print("actual lr: %.2e" % args.lr)
+    print("base lr_d: %.2e" % (args.lr_d * 32 / eff_batch_size_d))
+    print("actual lr_d: %.2e" % args.lr_d)
     model_selection_metric = cfg['training']['model_selection_metric']
     if cfg['training']['model_selection_mode'] == 'maximize':
         model_selection_sign = 1
@@ -154,14 +170,14 @@ def main(args):
     
     data_loader_train = torch.utils.data.DataLoader(
         dataset_train, sampler=sampler_train,
-        batch_size=args.batch_size,
+        batch_size=args.batch_size_d,
         num_workers=args.num_workers,
         pin_memory=args.pin_mem,
         drop_last=True,
     )
 
     # model
-    model = config.get_model(cfg, device=device, len_dataset=len(dataset_train))
+    model = config.get_model(cfg, device=device, len_dataset=len(dataset_train),args=args)
     model.to(device)
     model_without_ddp=model
 
@@ -190,11 +206,11 @@ def main(args):
         parameters_g = model.generator.parameters()
     else:
         parameters_g = list(model.decoder.parameters())
-    optimizer = op(parameters_g, lr=lr, **optimizer_kwargs)
+    optimizer = op(parameters_g, lr=args.lr, **optimizer_kwargs)
 
     if hasattr(model, "discriminator") and model.discriminator is not None:
         parameters_d = model.discriminator.parameters()
-        optimizer_d = op(parameters_d, lr=lr_d)
+        optimizer_d = op(parameters_d, lr=args.lr_d)
     else:
         optimizer_d = None
     
@@ -218,7 +234,7 @@ def main(args):
         print("No model checkpoint found.")
 
     # trainer
-    trainer = config.get_trainer(model.module, optimizer, optimizer_d, cfg, device=device)
+    trainer = config.get_trainer(model.module, optimizer, optimizer_d, cfg, device=device,args=args)
 
     # prepare training------------------------------
     epoch_it = load_dict.get('epoch_it', -1)

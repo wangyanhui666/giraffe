@@ -1,4 +1,4 @@
-description: train giraffe
+description: train giraffe v100
 
 target:
   service: sing
@@ -46,7 +46,7 @@ code:
 jobs:
 
   - name: giraffe
-    sku: 40G8
+    sku: 16G8-V100
     # aml_mpirun:
     #   communicator: "OpenMpi"
     command:
@@ -64,8 +64,8 @@ jobs:
       - pip install -r requirements.txt
       - torchrun --nproc_per_node=8 train.py
         --config configs/256res/clevr2345_256.yaml
-        --output_dir out/0807_videogiraffe_clevr2345_256
-        --batch_size 64
+        --output_dir out/0807_videogiraffe_clevr2345_256_v100_bs32
+        --batch_size 32
       - sleep infinity
         
     # aml_mpirun:

@@ -36,10 +36,10 @@ class GIRAFFE(nn.Module):
     '''
 
     def __init__(self, device=None,
-                 discriminator=None, generator=None, generator_test=None,
+                 discriminator=None, generator=None, generator_test=None,args=None,
                  **kwargs):
         super().__init__()
-
+        self.batch_size=args.batch_size
         if discriminator is not None:
             self.discriminator = discriminator.to(device)
         else:
@@ -54,11 +54,11 @@ class GIRAFFE(nn.Module):
         else:
             self.generator_test = None
 
-    def forward(self, batch_size, **kwargs):
+    def forward(self, **kwargs):
         gen = self.generator_test
         if gen is None:
             gen = self.generator
-        return gen(batch_size=batch_size)
+        return gen(batch_size=self.batch_size)
 
     def generate_test_images(self):
         gen = self.generator_test

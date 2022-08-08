@@ -1,3 +1,5 @@
+from ast import arg
+from re import A
 import yaml
 from im2scene import data
 from im2scene import gan2d, giraffe
@@ -61,7 +63,7 @@ def update_recursive(dict1, dict2):
 
 
 # Models
-def get_model(cfg, device=None, len_dataset=0):
+def get_model(cfg, device=None, len_dataset=0,args=None):
     ''' Returns the model instance.
 
     Args:
@@ -71,7 +73,7 @@ def get_model(cfg, device=None, len_dataset=0):
     '''
     method = cfg['method']
     model = method_dict[method].config.get_model(
-        cfg, device=device, len_dataset=len_dataset)
+        cfg, device=device, len_dataset=len_dataset,args=args)
     return model
 
 
@@ -93,7 +95,7 @@ def set_logger(cfg):
 
 
 # Trainer
-def get_trainer(model, optimizer, optimizer_d, cfg, device):
+def get_trainer(model, optimizer, optimizer_d, cfg, device,args):
     ''' Returns a trainer instance.
 
     Args:
@@ -105,7 +107,7 @@ def get_trainer(model, optimizer, optimizer_d, cfg, device):
     method = cfg['method']
     set_logger(cfg)
     trainer = method_dict[method].config.get_trainer(
-        model, optimizer, optimizer_d, cfg, device)
+        model, optimizer, optimizer_d, cfg, device,args)
     return trainer
 
 

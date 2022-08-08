@@ -31,9 +31,11 @@ class Trainer(BaseTrainer):
                  vis_dir=None,
                  multi_gpu=False, fid_dict={},
                  n_eval_iterations=10,
-                 overwrite_visualization=True, **kwargs):
+                 overwrite_visualization=True, args=None,**kwargs):
 
         self.model = model
+        self.batch_size=args.batch_size
+        self.batch_size_d=args.batch_size_d
         self.optimizer = optimizer
         self.optimizer_d = optimizer_d
         self.device = device
@@ -44,7 +46,7 @@ class Trainer(BaseTrainer):
         self.fid_dict = fid_dict
         self.n_eval_iterations = n_eval_iterations
 
-        self.vis_dict = model.generator.get_vis_dict(16)
+        self.vis_dict = model.generator.get_vis_dict()
 
         # if multi_gpu:
         #     self.generator = torch.nn.DataParallel(self.model.generator)
@@ -166,9 +168,10 @@ class Trainer(BaseTrainer):
             else:
                 x_fake = generator()
 
-        x_fake.requires_grad_()
+        # x_fake.requires_grad_()
         d_fake = discriminator(x_fake)
-
+        print('d_fake size',d_fake.size())
+        print('x_real size',x_real.size())
         d_loss_fake = compute_bce(d_fake, 0)
         loss_d_full += d_loss_fake
 

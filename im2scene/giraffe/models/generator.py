@@ -44,8 +44,9 @@ class Generator(nn.Module):
                  fov=49.13,
                  backround_rotation_range=[0., 0.],
                  sample_object_existance=False,
-                 use_max_composition=False, **kwargs):
+                 use_max_composition=False, args=None,**kwargs):
         super().__init__()
+        self.batch_size=args.batch_size
         self.device = device
         self.n_ray_samples = n_ray_samples
         self.range_u = range_u
@@ -81,11 +82,12 @@ class Generator(nn.Module):
         else:
             self.neural_renderer = None
 
-    def forward(self, batch_size=32, latent_codes=None, camera_matrices=None,
+    def forward(self, latent_codes=None, camera_matrices=None,
                 transformations=None, bg_rotation=None, mode="training", it=0,
                 return_alpha_map=False,
                 not_render_background=False,
                 only_render_background=False):
+        batch_size=self.batch_size
         if latent_codes is None:
             latent_codes = self.get_latent_codes(batch_size)
 
@@ -200,7 +202,7 @@ class Generator(nn.Module):
 
     def get_random_transformations(self, batch_size=32, to_device=True):
         device = self.device
-        s, t, R = self.bounding_box_generator(batch_size)
+        s, t, R = self.bounding_box_generator()
         if to_device:
             s, t, R = s.to(device), t.to(device), R.to(device)
         return s, t, R

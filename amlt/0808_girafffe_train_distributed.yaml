@@ -64,9 +64,7 @@ jobs:
       - pip install -r requirements.txt
       - torchrun --nproc_per_node=8 train.py
         --config configs/256res/clevr2345_256.yaml
-        --output_dir out/0807_videogiraffe_clevr2345_256
-        --batch_size 64
-      - sleep infinity
+        --output_dir out/0808_videogiraffe_clevr2345_256_1
         
     # aml_mpirun:
     #   process_count_per_node: 1

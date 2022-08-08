@@ -34,9 +34,9 @@ class BoundingBoxGenerator(nn.Module):
                  z_level_plane=0., rotation_range=[0., 1.],
                  check_collison=False, collision_padding=0.1,
                  fix_scale_ratio=True, object_on_plane=False,
-                 prior_npz_file=None, **kwargs):
+                 prior_npz_file=None, args=None, **kwargs):
         super().__init__()
-
+        self.batch_size=args.batch_size
         self.n_boxes = n_boxes
         self.scale_min = torch.tensor(scale_range_min).reshape(1, 1, 3)
         self.scale_range = (torch.tensor(scale_range_max) -
@@ -151,7 +151,8 @@ class BoundingBoxGenerator(nn.Module):
             batch_size, self.n_boxes, -1).cuda().float()
         return s, t, R
 
-    def forward(self, batch_size=32):
+    def forward(self):
+        batch_size=self.batch_size
         s, t, R = self.get_random_offset(batch_size)
         R = R.reshape(batch_size, self.n_boxes, 3, 3)
         return s, t, R
