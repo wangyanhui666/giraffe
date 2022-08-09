@@ -63,7 +63,7 @@ class Trainer(BaseTrainer):
         self.generator_test = self.model.generator_test
 
         if vis_dir is not None and not os.path.exists(vis_dir):
-            os.makedirs(vis_dir,exist_ok=True)
+            os.makedirs(vis_dir, exist_ok=True)
 
     def train_step(self, data, it=None):
         ''' Performs a training step.
