@@ -1,4 +1,4 @@
-description: train giraffe
+description: train giraffe dis
 
 target:
   service: sing
@@ -64,7 +64,7 @@ jobs:
       - pip install -r requirements.txt
       - torchrun --nproc_per_node=8 train.py
         --config configs/256res/clevr2345_256.yaml
-        --output_dir out/0810_videogiraffe_clevr2345_256_1
+        --output_dir out/0811_giraffe_dis_clevr2345_256_1
         
     # aml_mpirun:
     #   process_count_per_node: 1

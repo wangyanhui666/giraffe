@@ -77,9 +77,8 @@ def get_model(cfg, device=None, len_dataset=0,args=None):
     return model
 
 
-def set_logger(cfg):
-    logfile = os.path.join(cfg['training']['out_dir'],
-                           cfg['training']['logfile'])
+def set_logger(args):
+    logfile = os.path.join(args.output_dir,'train.log')
     logging.basicConfig(
         level=logging.INFO,
         format='[%(levelname)s] %(asctime)s %(name)s: %(message)s',
@@ -105,7 +104,7 @@ def get_trainer(model, optimizer, optimizer_d, cfg, device,args):
         device (device): pytorch device
     '''
     method = cfg['method']
-    set_logger(cfg)
+    set_logger(args)
     trainer = method_dict[method].config.get_trainer(
         model, optimizer, optimizer_d, cfg, device,args)
     return trainer

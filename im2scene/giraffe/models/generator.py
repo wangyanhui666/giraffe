@@ -86,7 +86,7 @@ class Generator(nn.Module):
                 transformations=None, bg_rotation=None, mode="training", it=0,
                 return_alpha_map=False,
                 not_render_background=False,
-                only_render_background=False):
+                only_render_background=False,batch_size=32):
         batch_size=self.batch_size
         if latent_codes is None:
             latent_codes = self.get_latent_codes(batch_size)
@@ -144,6 +144,7 @@ class Generator(nn.Module):
         return z
 
     def get_vis_dict(self, batch_size=32):
+        batch_size=self.batch_size
         vis_dict = {
             'batch_size': batch_size,
             'latent_codes': self.get_latent_codes(batch_size),

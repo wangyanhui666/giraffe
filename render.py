@@ -17,7 +17,7 @@ device = torch.device("cuda" if is_cuda else "cpu")
 out_dir = cfg['training']['out_dir']
 render_dir = os.path.join(out_dir, cfg['rendering']['render_dir'])
 if not os.path.exists(render_dir):
-    os.makedirs(render_dir)
+    os.makedirs(render_dir,exist_ok=True)
 
 # Model
 model = config.get_model(cfg, device=device)

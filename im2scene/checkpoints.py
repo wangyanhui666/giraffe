@@ -103,7 +103,7 @@ class CheckpointIO(object):
 
         for k, v in self.module_dict.items():
             if k in state_dict:
-                v.load_state_dict(state_dict[k])
+                    v.load_state_dict(state_dict[k])
             else:
                 print('Warning: Could not find %s in checkpoint!' % k)
         scalars = {k: v for k, v in state_dict.items()
