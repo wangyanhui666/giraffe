@@ -1,9 +1,9 @@
-description: train giraffe dis
+description: train giraffe v100
 
 target:
   service: sing
-  name: msrresrchvc
-  # name: msroctovc
+  # name: msrresrchvc
+  name: msroctovc
   # name: itpseasiav100cl
   # name: itpeastusv100cl
   # name: itpeusp100cl
@@ -26,8 +26,8 @@ environment:
 
 storage:
   data:
-    storage_account_name: wu2train
-    # storage_account_name: scim
+    # storage_account_name: wu2train
+    storage_account_name: scim
     # storage_account_name: seaim
     # storage_account_name: imdataeu
     # storage_account_name: imdatasc
@@ -46,27 +46,30 @@ code:
 jobs:
 
   - name: giraffe
-    sku: 40G8
+    sku: 16G8-V100
     # aml_mpirun:
     #   communicator: "OpenMpi"
     command:
-      - sudo mkdir -p /scratch
-      - cd /scratch
-      - wget -c https://azcopyvnext.azureedge.net/release20211027/azcopy_linux_amd64_10.13.0.tar.gz
-      - tar -xzvf azcopy_linux_amd64_10.13.0.tar.gz
-      - azcopy_linux_amd64_10.13.0/azcopy copy 'https://wu2train.blob.core.windows.net/v-yanhui/datasets/clevr2345?sv=2020-10-02&st=2022-08-08T14%3A51%3A26Z&se=2023-06-30T14%3A51%3A00Z&sr=c&sp=rl&sig=ECuuPQSTMI79jxfn2fMd55jl4Wty3eVU4OlUNqod2MQ%3D' ./ --recursive
-      - cd $$AMLT_CODE_DIR
+      # - sudo mkdir -p /scratch
+      # - cd /scratch
+      # - wget -c https://azcopyvnext.azureedge.net/release20211027/azcopy_linux_amd64_10.13.0.tar.gz
+      # - tar -xzvf azcopy_linux_amd64_10.13.0.tar.gz
+      # - azcopy_linux_amd64_10.13.0/azcopy copy 'https://wu2train.blob.core.windows.net/v-yanhui/datasets/clevr2345?sv=2020-10-02&st=2022-08-08T14%3A51%3A26Z&se=2023-06-30T14%3A51%3A00Z&sr=c&sp=rl&sig=ECuuPQSTMI79jxfn2fMd55jl4Wty3eVU4OlUNqod2MQ%3D' ./ --recursive
+      # - cd $$AMLT_CODE_DIR
       - export MKL_THREADING_LAYER=GNU
       - sudo ln -Ts /mnt/proj out
       - mkdir -p data/
-      - sudo ln -Ts /scratch/clevr2345 data/clevr2345
+      - sudo ln -Ts /mnt/data/datasets/clevr2345 data/clevr2345
       - ls data/clevr2345
       - pip install -r requirements.txt
       - torchrun --nproc_per_node=8 train.py
         --config configs/256res/clevr2345_256.yaml
-        --output_dir out/0811_giraffe_dis_clevr2345_256_2
-        --blr 0.0001
-        --blr_d 0.0004
+        --output_dir out/0815_giraffe_v100_lr1e-4_softlabelr_msroctovc_1
+        --batch_size 16
+        --batch_size_d 16
+        --blr 1e-4
+        --blr_d 4e-4
+        --soft_label_r 0.9
         
     # aml_mpirun:
     #   process_count_per_node: 1

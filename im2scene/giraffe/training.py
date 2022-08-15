@@ -32,7 +32,7 @@ class Trainer(BaseTrainer):
                  multi_gpu=False, fid_dict={},
                  n_eval_iterations=10,
                  overwrite_visualization=True, args=None,**kwargs):
-
+        self.args=args
         self.model = model
         self.batch_size=args.batch_size
         self.batch_size_d=args.batch_size_d
@@ -129,7 +129,10 @@ class Trainer(BaseTrainer):
             x_fake = generator()
 
         d_fake = discriminator(x_fake)
-        gloss = compute_bce(d_fake, 1)
+        if self.args.soft_label_r:
+            gloss = compute_bce(d_fake, self.args.soft_label_r)
+        else: 
+            gloss = compute_bce(d_fake, 1)
 
         gloss.backward()
         self.optimizer.step()
@@ -154,8 +157,10 @@ class Trainer(BaseTrainer):
 
         x_real.requires_grad_()
         d_real = discriminator(x_real)
-
-        d_loss_real = compute_bce(d_real, 1)
+        if self.args.soft_label_r:
+            d_loss_real = compute_bce(d_real, self.args.soft_label_r)
+        else:
+            d_loss_real = compute_bce(d_real, 1)
         loss_d_full += d_loss_real
 
         reg = 10. * compute_grad2(d_real, x_real).mean()

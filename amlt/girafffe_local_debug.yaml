@@ -1,1 +1,1 @@
-python -m torch.distributed.launch --nproc_per_node=1 train.py --config configs/256res/clevr2345_256_debug.yaml --output_dir out/0807_videogiraffe_clevr2345_256 --batch_size=2 --batch_size_d=2
+python -m torch.distributed.launch --nproc_per_node=1 train.py --config configs/256res/clevr2345_256_debug.yaml --output_dir out/0807_videogiraffe_clevr2345_256 --batch_size=2 --batch_size_d=2 --blr 2e-5 --blr_d 8e-5 --soft_label_r 0.9

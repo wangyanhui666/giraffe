@@ -49,15 +49,16 @@ def get_args_parser():
                         help='learning rate of generator (absolute lr)')
     parser.add_argument('--lr_d', type=float, default=None, metavar='LR',
                         help='learning rate of discriminator (absolute lr)')
-    parser.add_argument('--blr', type=float, default=5e-4, metavar='LR',
+    parser.add_argument('--blr', type=float, default=1e-4, metavar='LR',
                         help='base learning rate of generator: absolute_lr = base_lr * total_batch_size / 32')
-    parser.add_argument('--blr_d', type=float, default=1e-4, metavar='LR',
+    parser.add_argument('--blr_d', type=float, default=4e-4, metavar='LR',
                         help='base learning rate of discriminator: absolute_lr = base_lr * total_batch_size / 32')                    
     parser.add_argument('--min_lr', type=float, default=0., metavar='LR',
                         help='lower lr bound for cyclic schedulers that hit 0')
 
     parser.add_argument('--warmup_epochs', type=int, default=40, metavar='N',
                         help='epochs to warmup LR')
+    parser.add_argument('--soft_label_r', default=None , type=float, help='use soft label to real image')
 
     # Dataset parameters
     parser.add_argument('--data_path', default='/datasets01/imagenet_full_size/061417/', type=str,
@@ -125,8 +126,7 @@ def main(args):
     validate_every = cfg['training']['validate_every']
     visualize_every = cfg['training']['visualize_every']
     exit_after = args.exit_after
-    args.blr = cfg['training']['learning_rate']
-    args.blr_d = cfg['training']['learning_rate_d']
+
     t0 = time.time()
 
     eff_batch_size = args.batch_size * args.accum_iter * misc.get_world_size()

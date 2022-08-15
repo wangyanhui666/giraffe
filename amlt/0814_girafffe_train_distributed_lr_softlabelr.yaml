@@ -1,4 +1,4 @@
-description: train giraffe v100
+description: train giraffe dis
 
 target:
   service: sing
@@ -46,27 +46,28 @@ code:
 jobs:
 
   - name: giraffe
-    sku: 16G8-V100
+    sku: 40G8
     # aml_mpirun:
     #   communicator: "OpenMpi"
     command:
-      # - sudo mkdir -p /scratch
-      # - cd /scratch
-      # - wget -c https://azcopyvnext.azureedge.net/release20211027/azcopy_linux_amd64_10.13.0.tar.gz
-      # - tar -xzvf azcopy_linux_amd64_10.13.0.tar.gz
-      # - azcopy_linux_amd64_10.13.0/azcopy copy 'https://scim.blob.core.windows.net/selfsupdata/ImageNet?sv=2020-10-02&st=2022-03-31T15%3A30%3A27Z&se=2022-05-31T15%3A30%3A00Z&sr=c&sp=rl&sig=ZNMQpiWsUXv%2BYWOXaSdO8WDc3MHnr8WgNav1i%2B8WnaE%3D' ./ --recursive
-      # - cd $$AMLT_CODE_DIR
+      - sudo mkdir -p /scratch
+      - cd /scratch
+      - wget -c https://azcopyvnext.azureedge.net/release20211027/azcopy_linux_amd64_10.13.0.tar.gz
+      - tar -xzvf azcopy_linux_amd64_10.13.0.tar.gz
+      - azcopy_linux_amd64_10.13.0/azcopy copy 'https://wu2train.blob.core.windows.net/v-yanhui/datasets/clevr2345?sv=2020-10-02&st=2022-08-08T14%3A51%3A26Z&se=2023-06-30T14%3A51%3A00Z&sr=c&sp=rl&sig=ECuuPQSTMI79jxfn2fMd55jl4Wty3eVU4OlUNqod2MQ%3D' ./ --recursive
+      - cd $$AMLT_CODE_DIR
       - export MKL_THREADING_LAYER=GNU
       - sudo ln -Ts /mnt/proj out
       - mkdir -p data/
-      - sudo ln -Ts /mnt/data/datasets/clevr2345 data/clevr2345
+      - sudo ln -Ts /scratch/clevr2345 data/clevr2345
       - ls data/clevr2345
       - pip install -r requirements.txt
       - torchrun --nproc_per_node=8 train.py
         --config configs/256res/clevr2345_256.yaml
-        --output_dir out/0807_videogiraffe_clevr2345_256_v100_bs32
-        --batch_size 32
-      - sleep infinity
+        --output_dir out/0814_giraffe_adjustlr2e-5_softlabelr_clevr2345_256
+        --blr 2e-5
+        --blr_d 8e-5
+        --soft_label_r 0.9
         
     # aml_mpirun:
     #   process_count_per_node: 1
